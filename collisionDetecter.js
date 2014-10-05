@@ -4,7 +4,10 @@ spheroPort = process.env.SPHERO || '/dev/cu.Sphero-RGB',
 COLORS = spheron.toolbelt.COLORS,
 through = require("through");
 
-var maskAccel = 0x8000 | 0x4000 | 0x2000,
+var options = {},
+rate = 400 / (options.rate || 10), // 10 Hz
+stream = through(),
+maskAccel = 0x8000 | 0x4000 | 0x2000,
 maskOdom = 0x8000000 | 0x400000,
 mask = maskAccel,
 useMask2 = (mask == maskOdom);
@@ -72,7 +75,7 @@ sphero.on('open', function() {
 	});
 
 	stream.on('data', function(data){
-		if (mask == 0) {
+		if (data.time) {
 			console.log('Collision detected!!!\n\tx: ', data.x, '\ty: ', data.y, '\tz: ', data.z, '\tAxis: ', data.axis, '\n\txMag: ', data.xMag, '\tyMag: ', data.yMag, '\tSpeed: ', data.speed, '\tTime: ', data.time);
 			var mag = Math.sqrt(Math.pow(data.xMag,2) + Math.pow(data.yMag,2)),
 			ang = require('mathjs').mod(Math.atan2(data.y,data.x)*180/Math.PI, 360);
