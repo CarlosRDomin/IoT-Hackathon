@@ -4,45 +4,56 @@ var spheroPort = process.env.SPHERO || '/dev/cu.Sphero-RGB';
 var COLORS = spheron.toolbelt.COLORS;
 var through = require("through");
 
-// Mask for accelerometer x y z data
-var MASK = 0x0000 | 0x0000 | 0x0000;
-var MASK2 = 0x08000000 | 0x04000000;
+//For Server
+var http = require('http'),
+ioServer = require('socket.io'),
+ip = process.env.IP || 'localhost',
+portToListen = 8081;
 
 sphero.on('open', function() {
 	sphero.setRGB(COLORS.RED, false);
 
-	var stream = through();
-	var options = {};
-	var rate = 400 / (options.rate || 10); // default 10Hz
 
-	// Turn on accelerometer data streaming
-	sphero.setDataStreaming(rate, 1, MASK2, 0, true);
-
-	// Read incoming accelerometer data and emit on stream
-	sphero.on("packet", function(packet) {
-		if (packet.ID_CODE === 0x03) {
-			stream.queue({
-				x: packet.DATA.readInt16BE(0),
-				y: packet.DATA.readInt16BE(2),
-			});
-		}
+	// Create server & socket
+	var server = http.createServer(function(req, res)
+	{
+		// Send HTML headers and message
+		res.writeHead(404, {'Content-Type': 'text/html'});
+		res.end('<h1>Aw, snap! 404</h1>');
 	});
+	server.listen(portToListen);
+	ioServer = ioServer.listen(server);
 
-
-	stream.on('data', function(data){
-		console.log('Odometor: ', data.x, data.y);
+	console.log('Server Listenning!');
+	// listen to incoming request
+	ioServer.sockets.on('connection', function(socket)
+	{
+		console.log('Client connected.');
+	 
+		socket.on("impact", function(data){
+			var magnitude = Math.min(Math.max(120, Math.floor(data.split(',')[0])), 250);
+			var orientation = Math.floor(data.split(',')[1]);
+			var rollLength = Math.min(3000, Math.max(4*magnitude, 1000));
+			
+			console.log('Magnitude: ', magnitude, '; Orientation: ', orientation, '; Duration: ', rollLength);
+			
+			sphero.roll(magnitude, orientation, 1, {});
+			setTimeout(function(){
+				sphero.roll(0, orientation, 1, {});
+			}, rollLength);
+		});
+	 
+		// Disconnect listener
+		socket.on('disconnect', function() {
+			console.log('Client disconnected.');
+		});
 	});
-
-
-
-
+	
 	sphero.on('end', function() {
 		console.log('Connection has ended');
 	});
-
   
 });
-
 
 sphero.open(spheroPort);
 

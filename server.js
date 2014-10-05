@@ -1,11 +1,12 @@
 //For Server
 var http = require('http'),
 ioServer = require('socket.io'),
+ip = process.env.IP || 'localhost'
 portToListen = 8081;
 
 // For client
 var ioClient = require('socket.io-client'),
-server_url = 'http://localhost:8081';
+server_url = 'http://' + ip + ':' + portToListen;
 
 
 // Create server & socket
