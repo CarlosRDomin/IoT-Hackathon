@@ -4,6 +4,11 @@ spheroPort = process.env.SPHERO || '/dev/cu.Sphero-RGB',
 COLORS = spheron.toolbelt.COLORS,
 through = require("through");
 
+var maskAccel = 0x8000 | 0x4000 | 0x2000,
+maskOdom = 0x8000000 | 0x400000,
+mask = maskAccel,
+useMask2 = (mask == maskOdom);
+
 // Client connectivity
 var http = require('http'),
 serverIp = process.env.IP || '10.15.2.115',
