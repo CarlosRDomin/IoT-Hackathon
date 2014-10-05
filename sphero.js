@@ -4,14 +4,16 @@ var spheroPort = process.env.SPHERO || '/dev/cu.Sphero-RGB';
 var COLORS = spheron.toolbelt.COLORS;
 var through = require("through");
 
+
 //For Server
 var http = require('http'),
 ioServer = require('socket.io'),
 ip = process.env.IP || 'localhost',
 portToListen = 8081;
 
+
 sphero.on('open', function() {
-	sphero.setRGB(COLORS.RED, false);
+	sphero.setRGB(COLORS.BLUE, false);
 
 
 	// Create server & socket
@@ -33,7 +35,7 @@ sphero.on('open', function() {
 		socket.on("impact", function(data){
 			var magnitude = Math.min(Math.max(120, Math.floor(data.split(',')[0])), 250);
 			var orientation = Math.floor(data.split(',')[1]);
-			var rollLength = Math.min(3000, Math.max(4*magnitude, 1000));
+			var rollLength = Math.min(3000, Math.max(4*magnitude, 10w00));
 			
 			console.log('Magnitude: ', magnitude, '; Orientation: ', orientation, '; Duration: ', rollLength);
 			
@@ -49,6 +51,7 @@ sphero.on('open', function() {
 		});
 	});
 	
+
 	sphero.on('end', function() {
 		console.log('Connection has ended');
 	});
@@ -56,5 +59,3 @@ sphero.on('open', function() {
 });
 
 sphero.open(spheroPort);
-
-
