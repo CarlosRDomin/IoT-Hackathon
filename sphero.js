@@ -33,7 +33,7 @@ sphero.on('open', function() {
 		console.log('Client connected.');
 	 
 		socket.on("impact", function(data){
-			var magnitude = Math.min(Math.max(120, Math.floor(data.split(',')[0])), 250);
+			var magnitude = Math.min(Math.max(120, 2*Math.floor(data.split(',')[0])), 250);
 			var orientation = Math.floor(data.split(',')[1]);
 			var rollLength = Math.min(3000, Math.max(4*magnitude, 10w00));
 			
